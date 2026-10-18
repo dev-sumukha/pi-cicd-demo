@@ -33,3 +33,23 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Deploy to Raspberry Pi
+        if: github.event_name == 'push' && success()
+        env:
+          PI_HOST: ${{ secrets.PI_HOST }}
+          PI_SSH_PRIVATE_KEY: ${{ secrets.PI_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$PI_SSH_PRIVATE_KEY" > ~/.ssh/pi_deploy
+          chmod 600 ~/.ssh/pi_deploy
+
+          ssh-keyscan -H "$PI_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/pi_deploy \
+            -o StrictHostKeyChecking=yes \
+            jarvis@"$PI_HOST" \
+            'cd /home/jarvis/apps/pi-cicd-demo && git pull --ff-only && npm ci --omit=dev && sudo systemctl restart pi-cicd-demo'
+
+          rm -f ~/.ssh/pi_deploy

@@ -15,6 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Connect to Tailscale
+        if: github.event_name == 'push'
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+          ping: 100.121.141.125
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

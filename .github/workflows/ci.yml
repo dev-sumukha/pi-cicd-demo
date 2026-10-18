@@ -19,7 +19,9 @@ jobs:
         if: github.event_name == 'push'
         uses: tailscale/github-action@v4
         with:
-          authkey: ${{ secrets.TS_AUTHKEY }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
           ping: 100.121.141.125
 
       - name: Set up Node.js
@@ -40,8 +42,11 @@ jobs:
           PI_HOST: ${{ secrets.PI_HOST }}
           PI_SSH_PRIVATE_KEY: ${{ secrets.PI_SSH_PRIVATE_KEY }}
         run: |
+          set -eu
+
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+
           printf '%s\n' "$PI_SSH_PRIVATE_KEY" > ~/.ssh/pi_deploy
           chmod 600 ~/.ssh/pi_deploy
 
